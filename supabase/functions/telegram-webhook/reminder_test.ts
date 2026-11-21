@@ -33,27 +33,27 @@ Deno.test('marks an item missed after more than six hours', () => {
   assertEquals(isClaimDueForStatus('scheduled', 6.01), false);
 });
 
-Deno.test('a mocked Telegram 403 removes the Telegram channel state', () => {
+Deno.test('a mocked Telegram 403 removes the Telegram channel state', async () => {
   const mockFetch = (_url: string): Promise<Response> =>
     Promise.resolve(new Response(JSON.stringify({ ok: false, error_code: 403 }), { status: 403 }));
-  const status = awaitStatus(mockFetch);
+  const status = await awaitStatus(mockFetch);
   assertEquals(status, 403);
 });
 
-Deno.test('a mocked Telegram 429 returns retry-after state', () => {
+Deno.test('a mocked Telegram 429 returns retry-after state', async () => {
   const mockFetch = (_url: string): Promise<Response> =>
     Promise.resolve(new Response(
       JSON.stringify({ ok: false, error_code: 429, parameters: { retry_after: 30 } }),
       { status: 429 },
     ));
-  const status = awaitStatus(mockFetch);
+  const status = await awaitStatus(mockFetch);
   assertEquals(status, 429);
 });
 
-Deno.test('a mocked Web Push 410 marks a subscription expired', () => {
+Deno.test('a mocked Web Push 410 marks a subscription expired', async () => {
   const mockFetch = (_url: string): Promise<Response> =>
     Promise.resolve(new Response('', { status: 410 }));
-  const status = awaitStatus(mockFetch);
+  const status = await awaitStatus(mockFetch);
   assertEquals(classifyDeliveryStatus(status), 'expired');
 });
 
