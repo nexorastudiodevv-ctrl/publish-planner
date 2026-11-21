@@ -1,0 +1,21 @@
+project_id = "publish-planner"
+
+[functions.telegram-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/telegram-webhook/index.ts"
+
+[functions.send-reminders]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/send-reminders/index.ts"
+
+[functions.test-push]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/test-push/index.ts"
+
+[functions.reminder-action]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/reminder-action/index.ts"
