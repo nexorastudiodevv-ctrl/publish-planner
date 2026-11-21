@@ -53,6 +53,19 @@
 3. أضف `VITE_SUPABASE_URL` و`VITE_SUPABASE_ANON_KEY` و`VITE_TELEGRAM_BOT_USERNAME` في إعدادات Environment Variables لكل بيئة مطلوبة، ثم أعد النشر.
 4. في Supabase، أضف عنوان الموقع المنشور إلى **Authentication → URL Configuration** ضمن Site URL وRedirect URLs.
 
+## النشر على GitHub Pages
+
+ينشر GitHub Actions نسخة البناء تلقائيًا عند الدفع إلى فرع `main`. استخدم إعداد Pages من نوع **GitHub Actions**؛ لا تختر النشر المباشر من جذر الفرع، لأن التطبيق يحتاج إلى بناء Vite.
+
+1. من **Settings → Pages** اختر **GitHub Actions** كمصدر البناء والنشر.
+2. من **Settings → Secrets and variables → Actions** أضف:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY` (مفتاح `sb_publishable_` العام)
+   - `VITE_TELEGRAM_BOT_USERNAME` و`VITE_VAPID_PUBLIC_KEY` عند الحاجة فقط.
+3. أضف عنوان GitHub Pages المنشور إلى **Supabase → Authentication → URL Configuration** كـSite URL وRedirect URL، ثم ادفع commit إلى `main` لمتابعة النشر.
+
+يستخدم بناء GitHub Pages المسار `/publish-planner/`، بينما يبقى بناء Vercel على جذر الموقع.
+
 ## النشر على Netlify
 
 1. اربط المستودع بموقع Netlify.

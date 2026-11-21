@@ -8,6 +8,12 @@ declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
 
+const appScope = self.registration.scope;
+const appScopePath = new URL(appScope).pathname;
+const offlineUrl = new URL('offline', appScope).href;
+const offlinePath = new URL(offlineUrl).pathname;
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
@@ -15,19 +21,19 @@ registerRoute(
   ({ request, url }) =>
     request.mode === 'navigate' &&
     url.origin === self.location.origin &&
-    !url.pathname.startsWith('/functions/v1/'),
+    !url.pathname.startsWith(`${appScopePath}functions/v1/`),
   new NetworkFirst({
     cacheName: 'app-shell-navigation',
     networkTimeoutSeconds: 5,
     plugins: [{
-      handlerDidError: async () => Response.redirect('/offline', 302),
+      handlerDidError: async () => Response.redirect(offlineUrl, 302),
     }],
   }),
 );
 
 registerRoute(
-  new NavigationRoute(async () => Response.redirect('/offline', 302), {
-    allowlist: [/^\/offline$/],
+  new NavigationRoute(async () => Response.redirect(offlineUrl, 302), {
+    allowlist: [new RegExp(`^${escapeRegExp(offlinePath)}$`)],
   }),
 );
 
@@ -112,13 +118,14 @@ self.addEventListener('push', (event: PushEvent) => {
   }
 
   const itemId = payload.data?.itemId;
-  const url = payload.data?.url ?? '/';
+  const url = payload.data?.url ?? self.registration.scope;
+  const icon = new URL('icons/icon-192.png', self.registration.scope).href;
   const options: SwNotificationOptions = {
     body: payload.body ?? 'لديك تنبيه نشر جديد.',
     lang: 'ar',
     dir: 'rtl',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon,
+    badge: icon,
     tag: payload.tag ?? (itemId ? `reminder-${itemId}` : 'publish-planner'),
     renotify: true,
     data: { itemId, url },
@@ -178,7 +185,7 @@ async function readSupabaseUrl(): Promise<string | null> {
 }
 
 async function openNotificationUrl(url: string): Promise<void> {
-  const targetUrl = new URL(url, self.location.origin).href;
+  const targetUrl = new URL(url.replace(/^\/+/, ''), self.registration.scope).href;
   const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   for (const client of windows) {
     if ('focus' in client) {
